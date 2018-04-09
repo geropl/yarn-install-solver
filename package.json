@@ -1,0 +1,26 @@
+{
+  "name": "yarn-install-solver",
+  "version": "0.1.0",
+  "main": "main.js",
+  "author": "Gero Posmyk-Leinemann",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --max-old-space-size=6096 dist/main.js",
+    "prepare": "yarn clean && yarn build",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rimraf dist",
+    "build:clean": "yarn clean && yarn build",
+    "rebuild": "yarn clean && yarn "
+  },
+  "dependencies": {
+    "logic-solver": "^2.0.1",
+    "npm-registry-client" :"8.5.1",
+    "semver": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/semver": "^5.5.0",
+    "rimraf": "^2.6.1",
+    "typescript": "^2.7.1"
+  }
+}
