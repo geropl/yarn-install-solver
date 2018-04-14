@@ -27,7 +27,7 @@ export class NpmInfoProvider {
         return flatVersions;
     }
 
-    async getDependenciesFor(fixPkgVersion: FixPackageVersion): Promise<PackageDependencies> {
+    async getDependenciesFor(fixPkgVersion: FixPackageVersion, withDevDependencies: boolean = false): Promise<PackageDependencies> {
         const packageInfo = await this.getInfo(fixPkgVersion.name);
 
         const versions = packageInfo.versions;
@@ -41,7 +41,7 @@ export class NpmInfoProvider {
             package: fixPkgVersion,
             dependencies: [
                 ...toPackageDependencies(npmPackage.dependencies),
-                ...toPackageDependencies(npmPackage.devDependencies)
+                ...withDevDependencies ? toPackageDependencies(npmPackage.devDependencies) : []
             ]
         };
     }
