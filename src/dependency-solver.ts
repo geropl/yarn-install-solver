@@ -20,7 +20,7 @@ export class DependencySolver {
         for (const flattenedVersion of deps.flattenedVersions) {
             const range = flattenedVersion.package.toString();
             const flatVersions = this.reduceToStrings(flattenedVersion.dependencies);
-            solver.require(Logic.equiv(range, Logic.exactlyOne(...flatVersions)));
+            solver.require(Logic.and(range, Logic.exactlyOne(...flatVersions)));
         }
 
         // 3. Add all dependencies for fix versions of the form: rimraf:1.0.0 = [grep:^2.0.0, abc:1.2.3]
@@ -28,7 +28,7 @@ export class DependencySolver {
         for (const pkgDependencies of deps.dependencies) {
             const fixVersion = pkgDependencies.package.toString();
             const dependencies = this.reduceToStrings(pkgDependencies.dependencies);
-            solver.require(Logic.implies(fixVersion, Logic.and(...dependencies)));
+            solver.require(Logic.and(fixVersion, ...dependencies));
         }
 
         // 4. Exclude all missing packages
