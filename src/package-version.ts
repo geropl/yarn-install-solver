@@ -10,10 +10,10 @@ export interface PackageVersion {
 export namespace PackageVersion {
     export const create = (name: string, version: string | semver.SemVer | semver.Range) => {
         if (typeof version === 'string') {
-            if (semver.validRange(version)) {
-                return new RangePackageVersion(name, new semver.Range(version));
-            } else if (semver.valid(version)) {
+            if (semver.valid(version)) {
                 return new FixPackageVersion(name, new semver.SemVer(version));
+            } else if (semver.validRange(version)) {
+                return new RangePackageVersion(name, new semver.Range(version));
             } else {
                 return new FixExoticPackageVersion(name, version);
             }
@@ -36,7 +36,7 @@ export class FixPackageVersion implements PackageVersion {
     }
 
     toString(): string {
-        return this.name + ":" + this.version.version;
+        return this.name + ":" + this.version.format();
     }
 
     isFix() {
