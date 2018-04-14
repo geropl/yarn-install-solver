@@ -1,6 +1,7 @@
 import * as Logic from 'logic-solver';
 import { ResolvedDependencies } from './dependency-resolver';
-import { PackageVersion } from './package-version';
+import { PackageVersion, FixPackageVersion } from './package-version';
+import { PackageDependencies } from './npm-info-provider';
 
 
 export class DependencySolver {
@@ -47,10 +48,50 @@ export class DependencySolver {
             return;
         }
 
-        console.log("Result: " + JSON.stringify(result.getTrueVars()));
+        // Prepare result
+        const packages = this.createPackageVersionList(result.getTrueVars());
+        console.log("Result: " );
+        for (const pkg of packages) {
+            console.log("Package: " + pkg.package.name);
+            console.log("Patterns: " + pkg.dependencies.reduce((all, c) => (all ? all + ', ' : '') + c.toString(), ''));
+            console.log("Result: " + pkg.package.toString());
+        }
     }
 
     protected reduceToStrings(pkgVersions: PackageVersion[]): string[] {
         return pkgVersions.reduce<string[]>((r, v) => [ ...r, v.toString()], []);
+    }
+
+    protected createPackageVersionList(versions: string[]): PackageDependencies[] {
+        const resultMap = new Map<string,{result?: FixPackageVersion, patterns: PackageVersion[]}>();
+        const todo = versions;
+
+        while (todo.length > 0) {
+            const str = todo.pop()!;
+            const [name, version] = str.split(':', 2);
+
+            let resultEntry = resultMap.get(name);
+            if (!resultEntry) {
+                resultEntry = { patterns: [] };
+                resultMap.set(name, resultEntry);
+            }
+
+            const pkgVersion = PackageVersion.create(name, version);
+            if (pkgVersion instanceof FixPackageVersion) {
+                if (resultEntry.result !== undefined) {
+                    console.warn("More then one fixed version: " + pkgVersion.toString());
+                } else {
+                    resultEntry.result = pkgVersion;
+                }
+            }
+            resultEntry.patterns.push(pkgVersion);
+        }
+
+        const result: PackageDependencies[] = [];
+        resultMap.forEach(e => {
+            if (!e.result) throw new Error("No fix version for: " + JSON.stringify(e.patterns));
+            result.push({ package: e.result, dependencies: e.patterns })
+        });
+        return result;
     }
 }
